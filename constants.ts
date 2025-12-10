@@ -1,4 +1,4 @@
-import { Contact, ChildProfile } from './types';
+import { Contact, ChildProfile } from './types.ts';
 
 // Dados da Criança (Edite aqui)
 export const CHILD_DATA: ChildProfile = {
