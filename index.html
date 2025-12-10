@@ -16,11 +16,12 @@
       }
       /* Previne flash de conteúdo não estilizado */
       #root:empty::before {
-        content: 'Carregando...';
+        content: 'Carregando o sistema de emergência...';
         display: block;
         text-align: center;
-        padding: 20px;
+        padding: 40px 20px;
         color: #666;
+        font-weight: 500;
       }
       #error-log {
         display: none;
@@ -31,35 +32,43 @@
         color: #991b1b;
         border-radius: 8px;
         font-size: 14px;
+        font-family: monospace;
+        white-space: pre-wrap;
       }
     </style>
 
-    <!-- O Babel traduz o React para o navegador em tempo real -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Simula ambiente Node.js para o React funcionar bem no navegador -->
+    <script>
+      window.process = { env: { NODE_ENV: 'development' } };
+    </script>
 
-    <!-- ImportMap define de onde vêm as bibliotecas -->
+    <!-- ImportMap corrigido usando ?dev para evitar erros de compressão -->
     <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "lucide-react": "https://esm.sh/lucide-react@0.263.1",
+    "react": "https://esm.sh/react@18.2.0?dev",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client?dev",
+    "lucide-react": "https://esm.sh/lucide-react@0.263.1?dev",
     "react-dom/": "https://esm.sh/react-dom@^19.2.1/",
     "react/": "https://esm.sh/react@^19.2.1/"
   }
 }
 </script>
+
+    <!-- O Babel traduz o React para o navegador em tempo real -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   </head>
   <body>
     <div id="error-log"></div>
     <div id="root"></div>
 
-    <!-- Script de Debug para caso a tela fique branca -->
+    <!-- Script de Debug para exibir erros na tela se algo falhar -->
     <script>
       window.onerror = function(message, source, lineno, colno, error) {
         var errorDisplay = document.getElementById('error-log');
         errorDisplay.style.display = 'block';
-        errorDisplay.innerHTML = '<strong>Erro Detectado:</strong><br>' + message + '<br><small>' + source + ':' + lineno + '</small>';
+        errorDisplay.innerHTML = '<strong>Erro Detectado:</strong>\n' + message + '\n\n<small>' + source + ':' + lineno + '</small>';
+        console.error(error);
       };
     </script>
 
