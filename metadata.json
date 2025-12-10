@@ -1,0 +1,7 @@
+{
+  "name": "Encontrei - Contato de Emergência",
+  "description": "Aplicativo de resposta rápida para ajudar pessoas que encontraram crianças perdidas a entrarem em contato com os responsáveis via WhatsApp ou telefone, com opção de compartilhamento de localização.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
