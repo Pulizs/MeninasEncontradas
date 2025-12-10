@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { AlertTriangle, ShieldCheck, HeartPulse } from 'lucide-react';
-import { CONTACTS, CHILD_DATA } from './constants.ts';
-import { ContactCard } from './components/ContactCard.tsx';
-import { LocationRequest } from './components/LocationRequest.tsx';
+import { CONTACTS, CHILD_DATA } from './constants';
+import { ContactCard } from './components/ContactCard';
+import { LocationRequest } from './components/LocationRequest';
 
 const App: React.FC = () => {
   const [locationUrl, setLocationUrl] = useState<string | undefined>(undefined);

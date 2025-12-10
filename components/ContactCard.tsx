@@ -1,7 +1,7 @@
 import React from 'react';
 import { Phone, MessageCircle } from 'lucide-react';
-import { Contact } from '../types.ts';
-import { DEFAULT_MESSAGE } from '../constants.ts';
+import { Contact } from '../types';
+import { DEFAULT_MESSAGE } from '../constants';
 
 interface ContactCardProps {
   contact: Contact;
