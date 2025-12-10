@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { Phone, MessageCircle, AlertTriangle, ShieldCheck, HeartPulse, MapPin, Loader2, CheckCircle2 } from 'lucide-react';
 
 // ==========================================
-// 1. DEFINIÇÕES DE TIPOS
+// 1. CONFIGURAÇÕES E DADOS
 // ==========================================
+
+// --- TIPOS ---
 interface Contact {
   id: string;
   name: string;
@@ -20,18 +22,16 @@ interface ChildProfile {
   alertMessage?: string;
 }
 
-// ==========================================
-// 2. DADOS (EDITE AQUI)
-// ==========================================
+// --- DADOS DA CRIANÇA (Preencha aqui) ---
 const CHILD_DATA: ChildProfile = {
-  name: "Filha", // Substitua pelo nome real
+  name: "Filha", 
   age: "6 anos",
-  // Dica: Para usar uma foto real, faça upload dela no GitHub junto com este arquivo
-  // e mude a url para './foto.jpg'
+  // Se tiver uma foto na mesma pasta, use "./foto.jpg". Se não, use um link externo.
   photoUrl: "https://placehold.co/400x400/ffe4e6/e11d48?text=Foto", 
-  alertMessage: "" // Ex: "Tenho autismo", "Sou alérgica a..."
+  alertMessage: "" // Ex: "Tenho autismo"
 };
 
+// --- LISTA DE CONTATOS ---
 const CONTACTS: Contact[] = [
   {
     id: '1',
@@ -63,26 +63,26 @@ const CONTACTS: Contact[] = [
   }
 ];
 
-const DEFAULT_MESSAGE = "Olá! Estou com a sua filha. Escaneiei o QR Code.";
+const DEFAULT_MESSAGE = "Olá! Encontrei esta criança e escaneiei o QR Code.";
 
 // ==========================================
-// 3. COMPONENTES
+// 2. COMPONENTES
 // ==========================================
 
-// Componente do Cartão de Contato
+// --- Cartão de Contato ---
 const ContactCard: React.FC<{ contact: Contact; locationMessage?: string }> = ({ contact, locationMessage }) => {
-  const baseMessage = DEFAULT_MESSAGE;
   const finalMessage = locationMessage 
-    ? `${baseMessage} Minha localização aproximada: ${locationMessage}` 
-    : baseMessage;
+    ? `${DEFAULT_MESSAGE} Minha localização aproximada: ${locationMessage}` 
+    : DEFAULT_MESSAGE;
   
   const encodedMessage = encodeURIComponent(finalMessage);
   const whatsappUrl = `https://wa.me/${contact.whatsapp}?text=${encodedMessage}`;
   
-  const isParent = contact.relation.toLowerCase() === 'pai' || contact.relation.toLowerCase() === 'mãe';
+  // Destaca Pai e Mãe com cor diferente
+  const isParent = ['pai', 'mãe', 'mae'].includes(contact.relation.toLowerCase());
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border overflow-hidden mb-3 transition-transform active:scale-[0.99] ${isParent ? 'border-red-100 ring-1 ring-red-50' : 'border-gray-100'}`}>
+    <div className={`bg-white rounded-xl shadow-sm border overflow-hidden mb-3 ${isParent ? 'border-red-100 ring-1 ring-red-50' : 'border-gray-100'}`}>
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-3">
@@ -99,24 +99,22 @@ const ContactCard: React.FC<{ contact: Contact; locationMessage?: string }> = ({
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          {/* Botão WhatsApp */}
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="col-span-2 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] active:bg-[#1da851] text-white py-4 rounded-xl font-bold text-lg shadow-sm transition-colors"
+            className="col-span-2 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white py-3.5 rounded-xl font-bold text-lg shadow-sm transition-colors"
           >
-            <MessageCircle size={24} strokeWidth={2.5} />
-            Chamar no WhatsApp
+            <MessageCircle size={22} strokeWidth={2.5} />
+            WhatsApp
           </a>
 
-          {/* Botão Ligar */}
           <a
             href={`tel:+${contact.phone}`}
-            className="col-span-2 flex items-center justify-center gap-2 bg-white border-2 border-gray-200 hover:bg-gray-50 active:bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold text-base transition-colors"
+            className="col-span-2 flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-base hover:bg-gray-50 transition-colors"
           >
-            <Phone size={20} />
-            Ligar Agora
+            <Phone size={18} />
+            Ligar
           </a>
         </div>
       </div>
@@ -124,7 +122,7 @@ const ContactCard: React.FC<{ contact: Contact; locationMessage?: string }> = ({
   );
 };
 
-// Componente de Localização
+// --- Botão de Localização ---
 const LocationRequest: React.FC<{ onLocationFound: (url: string) => void }> = ({ onLocationFound }) => {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string>('');
@@ -134,7 +132,7 @@ const LocationRequest: React.FC<{ onLocationFound: (url: string) => void }> = ({
     
     if (!navigator.geolocation) {
       setStatus('error');
-      setErrorMsg('Navegador incompatível.');
+      setErrorMsg('Seu navegador não suporta geolocalização.');
       return;
     }
 
@@ -147,19 +145,18 @@ const LocationRequest: React.FC<{ onLocationFound: (url: string) => void }> = ({
       },
       (error) => {
         setStatus('error');
-        setErrorMsg('Erro ao obter GPS. Permita o acesso.');
+        setErrorMsg('Erro ao obter local. Verifique se o GPS está ativado.');
+        console.error(error);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
   if (status === 'success') {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+      <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6 flex items-center gap-3">
         <CheckCircle2 className="text-green-600 flex-shrink-0" size={20} />
-        <p className="text-sm text-green-800 font-medium">
-          Localização anexada à mensagem.
-        </p>
+        <p className="text-sm text-green-800 font-medium">Localização anexada ao WhatsApp.</p>
       </div>
     );
   }
@@ -183,13 +180,13 @@ const LocationRequest: React.FC<{ onLocationFound: (url: string) => void }> = ({
         ) : (
           <>
             <MapPin size={20} />
-            {status === 'error' ? 'Tentar novamente' : 'Anexar minha localização'}
+            {status === 'error' ? 'Tentar novamente' : 'Anexar Localização Atual'}
           </>
         )}
       </button>
       {status === 'idle' && (
         <p className="text-xs text-center text-gray-500 mt-2">
-          Clique para enviar sua posição exata junto com a mensagem.
+          Clique acima para enviar sua posição exata aos pais.
         </p>
       )}
       {status === 'error' && (
@@ -200,7 +197,7 @@ const LocationRequest: React.FC<{ onLocationFound: (url: string) => void }> = ({
 };
 
 // ==========================================
-// 4. APLICAÇÃO PRINCIPAL
+// 3. APP PRINCIPAL
 // ==========================================
 const App: React.FC = () => {
   const [locationUrl, setLocationUrl] = useState<string | undefined>(undefined);
@@ -208,84 +205,59 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#f8fafc] pb-12 font-sans">
       
-      {/* Cabeçalho Vermelho / Foto */}
+      {/* Header */}
       <div className="relative bg-white shadow-sm border-b border-gray-200 pb-6 rounded-b-[2rem] z-10">
         <div className="absolute top-0 left-0 w-full h-32 bg-red-600 z-0"></div>
         
         <div className="relative z-10 px-4 pt-8 max-w-md mx-auto flex flex-col items-center text-center">
           
+          {/* Foto */}
           <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-200 overflow-hidden mb-3 relative">
             {CHILD_DATA.photoUrl ? (
-              <img 
-                src={CHILD_DATA.photoUrl} 
-                alt={`Foto de ${CHILD_DATA.name}`}
-                className="w-full h-full object-cover"
-              />
+              <img src={CHILD_DATA.photoUrl} alt={CHILD_DATA.name} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                <span className="text-4xl">📷</span>
-              </div>
+              <div className="w-full h-full flex items-center justify-center text-4xl">📷</div>
             )}
-            <div className="absolute bottom-0 w-full bg-red-600/90 text-white text-[10px] font-bold py-1 uppercase tracking-wider">
-              Perdida
-            </div>
+            <div className="absolute bottom-0 w-full bg-red-600/90 text-white text-[10px] font-bold py-1 uppercase tracking-wider">Perdida</div>
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            Oi, sou a {CHILD_DATA.name}
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Oi, sou a {CHILD_DATA.name}</h1>
+          
           <p className="text-gray-500 font-medium mb-4">
-            {CHILD_DATA.age && <span>{CHILD_DATA.age} • </span>} 
-            <span className="text-red-600 font-bold">Estou perdida</span>
+             {CHILD_DATA.age} • <span className="text-red-600 font-bold">Estou perdida</span>
           </p>
 
           {CHILD_DATA.alertMessage && (
             <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-3 text-left mb-2">
                <HeartPulse className="text-yellow-600 shrink-0 mt-0.5" size={20} />
-               <p className="text-sm text-yellow-800 font-medium leading-snug">
-                 <span className="block font-bold uppercase text-xs text-yellow-600 mb-0.5">Atenção</span>
+               <p className="text-sm text-yellow-800 font-medium">
+                 <span className="block font-bold uppercase text-xs text-yellow-600">Atenção</span>
                  {CHILD_DATA.alertMessage}
                </p>
             </div>
           )}
 
-          <div className="bg-red-50 text-red-800 px-4 py-3 rounded-xl text-sm leading-relaxed border border-red-100 w-full">
-            <p className="font-semibold">
-              <span className="mr-1">👋</span> Você me encontrou?
-            </p>
-            <p className="opacity-90 mt-1">
-              Por favor, não me deixe sozinha. Avise meus pais clicando nos botões abaixo.
-            </p>
+          <div className="bg-red-50 text-red-800 px-4 py-3 rounded-xl text-sm border border-red-100 w-full mt-2">
+            <p className="font-semibold">👋 Você me encontrou?</p>
+            <p className="opacity-90 mt-1">Por favor, avise meus pais clicando nos botões abaixo.</p>
           </div>
         </div>
       </div>
 
       <main className="max-w-md mx-auto px-4 mt-6">
-        
-        {/* Botão de Localização */}
-        <div className="mb-6">
-           <LocationRequest onLocationFound={(url) => setLocationUrl(url)} />
-        </div>
+        <LocationRequest onLocationFound={setLocationUrl} />
 
-        {/* Lista de Contatos */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-2 ml-1">
             <ShieldCheck className="text-green-600" size={18} />
-            <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">
-              Contatos Responsáveis
-            </h2>
+            <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Contatos Responsáveis</h2>
           </div>
           
           {CONTACTS.map((contact) => (
-            <ContactCard 
-              key={contact.id} 
-              contact={contact} 
-              locationMessage={locationUrl}
-            />
+            <ContactCard key={contact.id} contact={contact} locationMessage={locationUrl} />
           ))}
         </div>
 
-        {/* Instruções Extras */}
         <div className="mt-8 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
            <h3 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
              <AlertTriangle size={16} className="text-orange-500" />
@@ -294,19 +266,15 @@ const App: React.FC = () => {
            <ul className="text-sm text-gray-600 space-y-2 list-disc pl-4">
              <li>Mantenha a criança em local seguro.</li>
              <li>Se estiver na praia, procure um Guarda-Vidas.</li>
-             <li>Em shopping/eventos, procure um segurança.</li>
+             <li>Em shopping, procure um segurança.</li>
            </ul>
         </div>
 
         <footer className="mt-8 mb-6 text-center">
           <p className="text-xs text-gray-400 mb-3">Se ninguém atender, ligue para as autoridades:</p>
           <div className="flex justify-center gap-3">
-            <a href="tel:190" className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full font-bold text-sm transition-colors">
-              190 Polícia
-            </a>
-            <a href="tel:193" className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full font-bold text-sm transition-colors">
-              193 Bombeiros
-            </a>
+            <a href="tel:190" className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full font-bold text-sm transition-colors">190 Polícia</a>
+            <a href="tel:193" className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full font-bold text-sm transition-colors">193 Bombeiros</a>
           </div>
         </footer>
       </main>
@@ -314,16 +282,9 @@ const App: React.FC = () => {
   );
 };
 
-// ==========================================
-// 5. INICIALIZAÇÃO
-// ==========================================
+// --- RENDERIZAÇÃO ---
 const rootElement = document.getElementById('root');
-if (!rootElement) {
-  throw new Error("Could not find root element");
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(<App />);
 }
-const root = ReactDOM.createRoot(rootElement);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Emergência - Criança Encontrada</title>
     
-    <!-- Estilos Utilitários -->
+    <!-- Estilos -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
@@ -14,14 +14,12 @@
         font-family: 'Inter', sans-serif;
         background-color: #f3f4f6;
       }
-      /* Previne flash de conteúdo não estilizado */
       #root:empty::before {
-        content: 'Carregando o sistema de emergência...';
+        content: 'Carregando sistema...';
         display: block;
         text-align: center;
-        padding: 40px 20px;
-        color: #666;
-        font-weight: 500;
+        padding: 50px;
+        color: #888;
       }
       #error-log {
         display: none;
@@ -31,48 +29,44 @@
         border: 1px solid #ef4444;
         color: #991b1b;
         border-radius: 8px;
-        font-size: 14px;
         font-family: monospace;
-        white-space: pre-wrap;
       }
     </style>
 
-    <!-- Simula ambiente Node.js para o React funcionar bem no navegador -->
+    <!-- Polyfill simples para evitar erros de ambiente -->
     <script>
-      window.process = { env: { NODE_ENV: 'development' } };
+      window.process = { env: { NODE_ENV: 'production' } };
     </script>
 
-    <!-- ImportMap corrigido usando ?dev para evitar erros de compressão -->
+    <!-- ImportMap corrigido e travado na versão 18.2.0 (Estável) -->
     <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@18.2.0?dev",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client?dev",
-    "lucide-react": "https://esm.sh/lucide-react@0.263.1?dev",
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.263.1",
     "react-dom/": "https://esm.sh/react-dom@^19.2.1/",
     "react/": "https://esm.sh/react@^19.2.1/"
   }
 }
 </script>
 
-    <!-- O Babel traduz o React para o navegador em tempo real -->
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   </head>
   <body>
     <div id="error-log"></div>
     <div id="root"></div>
 
-    <!-- Script de Debug para exibir erros na tela se algo falhar -->
     <script>
       window.onerror = function(message, source, lineno, colno, error) {
-        var errorDisplay = document.getElementById('error-log');
-        errorDisplay.style.display = 'block';
-        errorDisplay.innerHTML = '<strong>Erro Detectado:</strong>\n' + message + '\n\n<small>' + source + ':' + lineno + '</small>';
-        console.error(error);
+        var el = document.getElementById('error-log');
+        el.style.display = 'block';
+        el.innerHTML = '<strong>Erro:</strong> ' + message + '<br><small>' + source + ':' + lineno + '</small>';
       };
     </script>
 
-    <!-- Carrega o aplicativo unificado -->
+    <!-- App Unificado -->
     <script type="text/babel" data-type="module" src="./index.tsx"></script>
   </body>
 </html>
